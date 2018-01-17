@@ -17,14 +17,18 @@ A = double(A);
 
 B = jacobian(xdot, T);
 
-B = subs(B, T, 0);
+B = subs(B, T, 2);
 B = double(B);
 
-[t,x] = ode45(@(t,x) linear_pendulum(t,x,A,B), [0 25], [0 0]');
+[t,x] = ode45(@(t,x) linear_pendulum(t,x,A,B), [0 50], [0 0]');
 
 figure(1);
 title("Linearized System");
 plot(x(:,1));
 
 
+[t,x] = ode45(@(t,x) non_linear_pendulum(t,x), [0 50], [0 0]');
+figure(2);
+title("Non-Linearized System");
+plot(x(:,1));
 
