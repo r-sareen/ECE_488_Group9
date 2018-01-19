@@ -35,5 +35,5 @@ g = 9.81;
 
 [t,x] = ode45(@(t,x) non_linear_robot(t,x,m_1,m_2,l_1,l_2,g,c_1,c_2), [0 50], [0 0 0 0]');
 plot(x(:,1));
-hold on;
+
 plot(x(:,2));
