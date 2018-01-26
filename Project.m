@@ -37,10 +37,11 @@ xdot = [q_1_d;
 %% Linearization Code
 
 %Operating Point:
-q_1_bar = -pi/2;
+q_1_bar = pi/2;
 q_1_d_bar = 0;
 q_2_bar = 0;
 q_2_d_bar = 0;
+
 t_1_bar = ((m_1_real*l_1_real)/2 + m_2_real*l_1_real)*g_real*cos(q_1_bar) ...
         +  (m_2_real*l_2_real/2)*g_real*cos(q_1_bar + q_2_bar);
 t_2_bar = (m_2_real*l_2_real/2)*g_real*cos(q_1_bar + q_2_bar);
@@ -82,24 +83,54 @@ c_1 = 1;
 c_2 = 1;
 g = 9.81;
 
-[t,x] = ode45(@(t,x) non_linear_robot(t,x,m_1_real,m_2_real,l_1_real,l_2_real,g_real,c_1_real,c_2_real), [0 50], [0 0 0 0]');
+%% Closed Loop PD Controller
+%Linear Controller
+Kp_1 = -100;
+Kd_1 = -10;
+Kp_2 = -100;
+Kd_2 = -10;
+K = [Kp_1 Kd_1 0 0; 
+     0 0 Kp_2 Kd_2];
+x_des = [0; 0; 0; 0]; 
+[t,x] = ode45(@(t,x) linear_robot(t,x,A,B,K,x_des), [0 15], [0.1 0 0 0]');
 figure(1);
 plot(x(:,1));
 hold on;
-plot(x(:,2));
+plot(x(:,3));
 legend('Link 1', 'Link 2');
-title('Non-Linear Simulation');
+title('Linear Simulation - PD Controller');
 
-[t,x] = ode45(@(t,x) linear_robot(t,x,A,B), [0 50], [0.1 0 0 0]');
+%Non-Linear Controller
+x_des = [0; 0; 1; 0];
+[t,x] = ode45(@(t,x) non_linear_robot(t,x,x_des,K,m_1_real,m_2_real,l_1_real,l_2_real,g_real,c_1_real,c_2_real), [0 50], [0 0 0 0]');
 figure(2);
 plot(x(:,1));
 hold on;
-plot(x(:,2));
+plot(x(:,3));
 legend('Link 1', 'Link 2');
-title('Linear Simulation');
+title('Non-Linear Simulation - PD Controller');
+
+%% Open Loop Simulations
+% [t,x] = ode45(@(t,x) non_linear_robot(t,x,m_1_real,m_2_real,l_1_real,l_2_real,g_real,c_1_real,c_2_real), [0 50], [0 0 0 0]');
+% figure(1);
+% plot(x(:,1));
+% hold on;
+% plot(x(:,2));
+% legend('Link 1', 'Link 2');
+% title('Non-Linear Simulation');
+
+% [t,x] = ode45(@(t,x) linear_robot(t,x,A,B), [0 50], [0.1 0 0 0]');
+% figure(2);
+% plot(x(:,1));
+% hold on;
+% plot(x(:,2));
+% legend('Link 1', 'Link 2');
+% title('Linear Simulation');
 
 % %% TF of Linear System
 % s = tf('s');
 % I = [1 0;
 %     0 1];
 % G = C*(inv(s*I-A))*B;
+
+
