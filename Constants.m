@@ -17,7 +17,7 @@ my_some_variable_a=0;
 my_some_variable_b=0;
 i=1;
 j=1; 
-x_hat_old = 0;
+x_hat_old = [0 0 0 0]';
 target_points=[0.1, 0.2;
                0.11, 0.2; 
                0.12, 0.2;
@@ -85,10 +85,10 @@ R_kal = [(1/9) 0;
         0 (1/9)];
 
 %% LQR
-Q_LQR = [1 0 0 0
-    0 1 0 0;
-    0 0 1 0;
-    0 0 0 1];
+Q_LQR = [10 0 0 0
+        0 1 0 0;
+        0 0 10 0;
+        0 0 0 1];
     
 R_LQR = [1 0;
         0 1];
@@ -147,6 +147,8 @@ for i=1:length(target_points)
     F_list(:,:,i) = F;
     K_list(:,:,i) = K;
     t_list(:,:,i) = [t_1_bar t_2_bar];
+    q1_list(i) = q_1_bar;
+    q2_list(i) = q_2_bar;
     
 end
           

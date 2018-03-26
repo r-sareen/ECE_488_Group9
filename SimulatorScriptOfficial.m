@@ -2,6 +2,7 @@
 close all
 clear all
 Constants;
+count = 1;
 %constants2;
 
 
@@ -19,7 +20,7 @@ q=qout(end,[1,3])';
 
 
 for t=0.001:0.001:10
-
+    
    %check if robot meets requirements
 
    RobotControllerScript %your script is used here.
@@ -28,9 +29,9 @@ for t=0.001:0.001:10
    
    [tout,qout]=ode45(@(time,x)simulatorofficial(time,x,U,l1,l2,m1,m2,g,c1,c2),[t t+0.001],qout(end,:));
    q=qout(end,[1,3])';
-   q_hist(:,floor(t/0.001)) = q;
-   t_hist(floor(t/0.001)) = t;
-   
+   q_hist(:,count) = q;
+   t_hist(count) = t;
+   count = count + 1;
 end
  
 %% Visualize code
