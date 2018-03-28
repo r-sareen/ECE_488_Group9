@@ -87,10 +87,10 @@ C = [1 0 0 0;
      0 0 1 0];
 
 %% Kalman Filter
-Q_kal = [0.0001 0 0 0;
-        0 0.0001 0 0;
-        0 0 0.0001 0;
-        0 0 0 0.0001];
+Q_kal = [10 0 0 0;
+        0 1 0 0;
+        0 0 10 0;
+        0 0 0 1];
 
 R_kal = [0.001939 0;
         0 0.001939];
@@ -151,9 +151,9 @@ for i=1:length(target_points)
     [F,P,ev] = lqr(A',C',Q_kal,R_kal);
     F = F';
     
-    [K,P,ev] = lqr(A,B,Q_LQR,R_LQR);
+    %[K,P,ev] = lqr(A,B,Q_LQR,R_LQR);
     
-    %K = place(A,B,[-2 -4 -3 -1]);
+    K = place(A,B,[-20 -40 -30 -10]);
     
     A_list(:,:,i) = A;
     B_list(:,:,i) = B;

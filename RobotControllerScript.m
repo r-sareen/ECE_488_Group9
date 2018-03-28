@@ -1,7 +1,7 @@
 U_old = U;
 
 %% Add noise to ouput
-
+q = q + randn(2,1)*0.0058178;
 
 %% Estimate state using the state estimator equations
 x_hat_d = x_hat_old_d + ((A_list(:,:,j)-F_list(:,:,j)*C)*x_hat_old_d + F_list(:,:,j)*(q-[q1_list(j) q2_list(j)]')...
