@@ -16,9 +16,6 @@ U=tau_0;
 [tout,qout]=ode45(@(time,x)simulatorofficial(time,x,U,l1,l2,m1,m2,g,c1,c2),[0 0.001],X0);
 q=qout(end,[1,3])';
     
-
-
-
 for t=0.001:0.001:10
     
    %check if robot meets requirements
