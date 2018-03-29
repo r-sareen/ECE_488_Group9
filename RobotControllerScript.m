@@ -13,22 +13,9 @@ x_hat = x_hat_d + [q1_list(j) 0 q2_list(j) 0]';
 Y = sin(x_hat(1))*l1 + sin(x_hat(1)+x_hat(3))*l2;
 X = cos(x_hat(1))*l1 + cos(x_hat(1)+x_hat(3))*l2;
 
-% x_hat_d = x_hat - [q1_list(j) 0 q2_list(j) 0]';
-% error_list(:,:,count) = x_hat - qout(end,:)' 
-
-%% No Estimator
-% x_hat = qout(end,:)';
-% 
-% % Calculate distance to target
-% Y = sin(x_hat(1))*l1 + sin(x_hat(1)+x_hat(3))*l2;
-% X = cos(x_hat(1))*l1 + cos(x_hat(1)+x_hat(3))*l2;
-% 
-% x_hat_d = x_hat - [q1_list(j) 0 q2_list(j) 0]';
-% x_hat_old = x_hat;
-
-
-
-if (sqrt((X-target_points(j,1))^2 + (Y-target_points(j,2))^2)<0.01)
+%% Check if you are within 4mm of a target point
+if (sqrt((X-target_points(j,1))^2 + (Y-target_points(j,2))^2)<0.04)
+    % Pause for 500 time steps (0.5 seconds) if at one of four corners
     if (j==1 && wait_count<500)
         wait_count = wait_count+1;
         j = 1;
@@ -49,6 +36,7 @@ if (sqrt((X-target_points(j,1))^2 + (Y-target_points(j,2))^2)<0.01)
         wait_count = wait_count+1;
         j = 41;
     end
+    %If wait complete or not at corner increment trajectory counter
     if (wait_count>=500 || wait_count == 0)
         if (j<41)
             j = j+1;
@@ -57,10 +45,6 @@ if (sqrt((X-target_points(j,1))^2 + (Y-target_points(j,2))^2)<0.01)
     end
 end
 
+%% Compute final control input
 U = -K_list(:,:,j)*(x_hat_d) + t_list(:,:,j)';
-    
-% Just state feedback is required for pull method
-% If we did push, regulator is required.
-
-    
-    
+  

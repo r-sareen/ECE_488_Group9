@@ -1,20 +1,18 @@
 %put constant values in this file%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%You NEED these constants%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-c1=4;%link 1 friction coeffecient
-c2=4;%link 2 friction coeffecient
-l1=0.15; %link 1 length
-l2=0.15; %link 2 length
+c1=10;%link 1 friction coeffecient
+c2=10;%link 2 friction coeffecient
+l1=0.44; %link 1 length
+l2=0.44; %link 2 length
 m1=0.375;%link 1 mass
 m2=0.375;%link 2 mass
 g=3.7;%acceleration due to gravity m/s^2 on mars
-x_0=[0.3774,0,1.4595,0]';%x_0=[q1_0,q1dot_0,q2_0,q2dot_0] initial conditions for the robot
+x_0=[-0.2067,0,2.6278,0]';%x_0=[q1_0,q1dot_0,q2_0,q2dot_0] initial conditions for the robot
 tau_0=[0,0]'; %initial torque
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Declare all your variables here, prefix with my_ %Feel Free to add to or remove these constants%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my_time=0;
 my_angle_vector=[0 0]';
 my_state_estimate_vector=[0 0 0 0]';
-my_some_variable_a=0;
-my_some_variable_b=0;
 i=1;
 j=1; 
 x_hat_old_d = [0 0 0 0]';
@@ -87,22 +85,22 @@ C = [1 0 0 0;
      0 0 1 0];
 
 %% Kalman Filter
-Q_kal = [10 0 0 0;
+Q_kal = [1 0 0 0;
         0 1 0 0;
-        0 0 10 0;
+        0 0 1 0;
         0 0 0 1];
 
-R_kal = [0.001939 0;
-        0 0.001939];
+R_kal = [0.00003384637 0;
+        0 0.00003384637];
 
 %% LQR
-Q_LQR = [1 0 0 0
-        0 10 0 0;
-        0 0 1 0;
-        0 0 0 10];
+Q_LQR = [30000 0 0 0
+        0 1000 0 0;
+        0 0 30000 0;
+        0 0 0 1000];
     
-R_LQR = [100 0;
-        0 100];
+R_LQR = [1 0;
+        0 1];
 
 for i=1:length(target_points)
     %% Calculate Operating Point
@@ -151,9 +149,9 @@ for i=1:length(target_points)
     [F,P,ev] = lqr(A',C',Q_kal,R_kal);
     F = F';
     
-    %[K,P,ev] = lqr(A,B,Q_LQR,R_LQR);
+    [K,P,ev] = lqr(A,B,Q_LQR,R_LQR);
     
-    K = place(A,B,[-20 -40 -30 -10]);
+    %K = place(A,B,[-20 -40 -30 -10]);
     
     A_list(:,:,i) = A;
     B_list(:,:,i) = B;
