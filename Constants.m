@@ -1,22 +1,26 @@
-%put constant values in this file%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%You NEED these constants%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-c1=10;%link 1 friction coeffecient
-c2=10;%link 2 friction coeffecient
-l1=0.44; %link 1 length
-l2=0.44; %link 2 length
-m1=0.375;%link 1 mass
-m2=0.375;%link 2 mass
+c1=8;%link 1 friction coeffecient
+c2=8;%link 2 friction coeffecient
+l1=0.4412; %link 1 length
+l2=0.4412; %link 2 length
+m1=l1*0.85;%link 1 mass
+m2=l2*0.85;%link 2 mass
 g=3.7;%acceleration due to gravity m/s^2 on mars
-x_0=[-0.2067,0,2.6278,0]';%x_0=[q1_0,q1dot_0,q2_0,q2dot_0] initial conditions for the robot
+%Calculate initial robot state (Starting at point A)
+Y = sqrt(1-((0.1^2 + 0.2^2 - l1^2 - l2^2)/(2*l1*l2))^2);
+X = (0.1^2 + 0.2^2 - l1^2 - l2^2)/(2*l1*l2);
+q_2_0 = atan2(Y,X);
+q_1_0 = atan2(0.2, 0.1) - atan2(l2*sin(q_2_0),l1 + l2*cos(q_2_0));
+x_0=[q_1_0,0,q_2_0,0]'; %initial robot state
 tau_0=[0,0]'; %initial torque
+energy = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Declare all your variables here, prefix with my_ %Feel Free to add to or remove these constants%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-my_time=0;
-my_angle_vector=[0 0]';
-my_state_estimate_vector=[0 0 0 0]';
-i=1;
-j=1; 
+i=1; %counter used in linearization code
+j=1; %counter used to step through target points when controlling arm
 x_hat_old_d = [0 0 0 0]';
-wait_count = 0;
+wait_count = 0; %counter used to wait at corner target points
+dist_hist_real = zeros(10,000);
+dist_hist = zeros(10,000);
 target_points=[0.1, 0.2;
                0.11, 0.2; 
                0.12, 0.2;
@@ -58,6 +62,8 @@ target_points=[0.1, 0.2;
                0.1, 0.18;
                0.1, 0.19;
                0.1, 0.2;];
+           
+%% Symbollically solve for A and B jacobian matrices using given dynamic equations
 syms q_1 q_1_d q_1_dd q_2 q_2_d q_2_dd t_1 t_2 eq_1 eq_2;
 syms m_1 l_1 m_2 l_2 c_1 c_2 g_;
     
@@ -84,24 +90,25 @@ B_jac = jacobian(xdot, [t_1 t_2]);
 C = [1 0 0 0;
      0 0 1 0];
 
-%% Kalman Filter
+%% Kalman Filter covariance matrices
 Q_kal = [1 0 0 0;
         0 1 0 0;
         0 0 1 0;
         0 0 0 1];
 
-R_kal = [0.00003384637 0;
-        0 0.00003384637];
+R_kal = [0.000033846 0;
+        0 0.000033846];
 
-%% LQR
-Q_LQR = [30000 0 0 0
+%% LQR Q and R matrices
+Q_LQR = [400000 0 0 0
         0 1000 0 0;
-        0 0 30000 0;
+        0 0 400000 0;
         0 0 0 1000];
     
 R_LQR = [1 0;
         0 1];
-
+    
+%% Iterate through all operating points and store linearized versions of all parameters
 for i=1:length(target_points)
     %% Calculate Operating Point
     Y = sqrt(1-((target_points(i,1)^2 + target_points(i,2)^2 - l1^2 - l2^2)/(2*l1*l2))^2);
@@ -146,13 +153,15 @@ for i=1:length(target_points)
     B = subs(B, g_, g);
     B = double(B);
     
+    %% Solve for estimator F matrix (Kalman Filter)
     [F,P,ev] = lqr(A',C',Q_kal,R_kal);
     F = F';
     
+    %% Solve for controller gains (LQR)
     [K,P,ev] = lqr(A,B,Q_LQR,R_LQR);
     
-    %K = place(A,B,[-20 -40 -30 -10]);
     
+    %% Store all relevant values
     A_list(:,:,i) = A;
     B_list(:,:,i) = B;
     F_list(:,:,i) = F;
@@ -161,6 +170,5 @@ for i=1:length(target_points)
     q1_list(i) = q_1_bar;
     q2_list(i) = q_2_bar;
     
-end
-          
+end          
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
